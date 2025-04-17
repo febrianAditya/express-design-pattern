@@ -1,4 +1,6 @@
+// import { Product } from "../models"
 
+const { Product } = require("../models")
 let data = [{
     "id": 1,
     "descProduct": "Crispy dill pickles that are perfect for snacking or sandwiches.",
@@ -24,35 +26,44 @@ let data = [{
 class ProductControllers {
 
 
-    static getDataById(req, res) {
-        let {id} = req.params // ini boleh
-        let idNumber = Number(id)
+    static async getDataById(req, res) {
+        try {
+            let {id} = req.params // ini boleh
+            let idNumber = Number(id)
+            let dataById = await Product.findByPk(idNumber)
 
-
-        let result = data.find(el => {
-            return el.id === idNumber
-        })
-
-        res.status(200).json(result)
-    }
-
-    static getAllData(req, res) {
-        res.status(200).json(data)
-    }
-
-    static addProduct(req, res) {
-        const {descProduct, nameProduct} = req.body
-        let inputData = {
-            descProduct, 
-            productName : nameProduct
+            res.status(200).json(dataById)
+        } catch (error) {
+            res.status(500).json(error)
         }
         
-        let idManipulate = data[data.length-1].id + 1
-        inputData.id = idManipulate
-    
-        data.push(inputData)
+    }
 
-        res.status(201).json(data)
+    static async getAllData(req, res) {
+        try {
+            let data = await Product.findAll()
+            res.status(200).json(data)
+        } catch (error) {
+            res.status(500).json(error)
+        }
+        
+    }
+
+    static async addProduct(req, res) {
+        try {
+            const {descProduct, productName} = req.body
+            let inputData = {
+                descProduct, 
+                productName : productName
+            }
+            
+            const addData = await Product.create(inputData)
+
+            res.status(201).json("Success Added")
+        } catch (error) {
+            res.status(500).json(error)
+        }
+        
     }
 
     static editProduct(req, res) {
@@ -78,14 +89,22 @@ class ProductControllers {
         res.status(200).json(data)
     }
 
-    static deleteProduct(req, res) {
-        let id = req.params.id
-        let result = data.filter(el => {
-            return el.id != id
-        })
-        data = result
+    static async deleteProduct(req, res) {
+        try {
+            let id = req.params.id
 
-        res.status(200).json("succes deleted")  
+            let dataResponse = await Product.destroy({
+                where: {
+                    id
+                }
+            })
+            console.log(dataResponse);
+            
+
+            res.status(200).json("Data has been deleted")
+        } catch (error) {
+            res.status(500).json(error)
+        }
     }
 }
 
